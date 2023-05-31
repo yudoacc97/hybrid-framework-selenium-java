@@ -5,6 +5,8 @@ import java.util.Set;
 
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
@@ -162,6 +164,10 @@ public class BasePage {
 		return getListWebElement(driver, xpathLocator).size();
 	}
 
+	protected int getElementsSize(WebDriver driver, String xpathLocator, String... dynamicValues) {
+		return getListWebElement(driver, getDynamicXPath(xpathLocator, dynamicValues)).size();
+	}
+
 	protected String getHexColorFromRGBAColor(String rgbaValue) {
 		return Color.fromString(rgbaValue).asHex();
 	}
@@ -189,6 +195,13 @@ public class BasePage {
 		}
 	}
 
+	protected void checkToDefaultCheckboxRadio(WebDriver driver, String xpathLocator, String... dynamicValues) {
+		WebElement element = getWebElement(driver, getDynamicXPath(xpathLocator, dynamicValues));
+		if (!element.isSelected()) {
+			element.click();
+		}
+	}
+
 	protected void unCheckToDefaultCheckbox(WebDriver driver, String xpathLocator) {
 		WebElement element = getWebElement(driver, xpathLocator);
 		if (element.isSelected()) {
@@ -196,8 +209,20 @@ public class BasePage {
 		}
 	}
 
+	protected void unCheckToDefaultCheckbox(WebDriver driver, String xpathLocator, String... dynamicValues) {
+		WebElement element = getWebElement(driver, getDynamicXPath(xpathLocator, dynamicValues));
+		if (element.isSelected()) {
+			element.click();
+		}
+	}
+
 	protected void selectItemInDefaultDropdown(WebDriver driver, String xpathLocator, String textItem) {
 		Select select = new Select(getWebElement(driver, xpathLocator));
+		select.selectByVisibleText(textItem);
+	}
+
+	protected void selectItemInDefaultDropdown(WebDriver driver, String xpathLocator, String textItem, String... dynamicValues) {
+		Select select = new Select(getWebElement(driver, getDynamicXPath(xpathLocator, dynamicValues)));
 		select.selectByVisibleText(textItem);
 	}
 
@@ -222,6 +247,26 @@ public class BasePage {
 	protected void hoverMouseToElement(WebDriver driver, String xpathLocator) {
 		Actions action = new Actions(driver);
 		action.moveToElement(getWebElement(driver, xpathLocator)).perform();
+	}
+
+	protected void pressKeyToElement(WebDriver driver, String xpathLocator, Keys key) {
+		Actions action = new Actions(driver);
+		action.sendKeys(getWebElement(driver, xpathLocator), key).perform();
+	}
+
+	protected void pressKeyToElement(WebDriver driver, String xpathLocator, Keys key, String... dynamicValues) {
+		Actions action = new Actions(driver);
+		action.sendKeys(getWebElement(driver, getDynamicXPath(xpathLocator, dynamicValues)), key).perform();
+	}
+
+	protected void uploadFile(WebDriver driver, String... fileNames) {
+		String uploadFilesFolder = GlobalConstants.UPLOAD_FILES_FOLDER;
+		String filePath = "";
+		for (String file : fileNames) {
+			filePath = filePath + uploadFilesFolder + file + "\n";
+		}
+		filePath = filePath.trim();
+		getWebElement(driver, "//input[@type='file']").sendKeys(filePath);
 	}
 
 	protected void waitForElementClickable(WebDriver driver, String xpathLocator) {
@@ -283,6 +328,27 @@ public class BasePage {
 	}
 
 	private long longTimeOut = 30;
+
+	// JavascriptExecutor methods
+	protected void removeAttributeInDOM(WebDriver driver, String xpathLocator, String attributeRemove) {
+		JavascriptExecutor jsExecutor = (JavascriptExecutor) driver;
+		jsExecutor.executeScript("arguments[0].removeAttribute('" + attributeRemove + "');", getWebElement(driver, xpathLocator));
+	}
+
+	protected void removeAttributeInDOM(WebDriver driver, String xpathLocator, String attributeRemove, String... dynamicValues) {
+		JavascriptExecutor jsExecutor = (JavascriptExecutor) driver;
+		jsExecutor.executeScript("arguments[0].removeAttribute('" + attributeRemove + "');", getWebElement(driver, getDynamicXPath(xpathLocator, dynamicValues)));
+	}
+
+	protected boolean isImageLoaded(WebDriver driver, String locatorType) {
+		JavascriptExecutor jsExecutor = (JavascriptExecutor) driver;
+		return (boolean) jsExecutor.executeScript("return arguments[0].complete && typeof arguments[0].naturalWidth != \"undefined\" && arguments[0].naturalWidth > 0", getWebElement(driver, locatorType));
+	}
+
+	protected boolean isImageLoaded(WebDriver driver, String locatorType, String... dynamicValues) {
+		JavascriptExecutor jsExecutor = (JavascriptExecutor) driver;
+		return (boolean) jsExecutor.executeScript("return arguments[0].complete && typeof arguments[0].naturalWidth != \"undefined\" && arguments[0].naturalWidth > 0", getWebElement(driver, getDynamicXPath(locatorType, dynamicValues)));
+	}
 
 	// nopCommerce methods
 	public void clickToHeaderLinkByText(WebDriver driver, String linkText) {
