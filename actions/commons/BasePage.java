@@ -13,6 +13,8 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import pageUIs.nopCommerce.BasePageUI;
+
 public class BasePage {
 
 	protected void openPageUrl(WebDriver driver, String pageUrl) {
@@ -108,6 +110,10 @@ public class BasePage {
 		return By.xpath(xpathLocator);
 	}
 
+	private String getDynamicXPath(String xpathLocator, String... dynamicValues) {
+		return String.format(xpathLocator, (Object[]) dynamicValues);
+	}
+
 	protected WebElement getWebElement(WebDriver driver, String xpathLocator) {
 		return driver.findElement(getByXPath(xpathLocator));
 	}
@@ -120,8 +126,18 @@ public class BasePage {
 		getWebElement(driver, xpathLocator).click();
 	}
 
+	protected void clickToElement(WebDriver driver, String xpathLocator, String... dynamicValues) {
+		getWebElement(driver, getDynamicXPath(xpathLocator, dynamicValues)).click();
+	}
+
 	protected void sendKeysToElement(WebDriver driver, String xpathLocator, String textValue) {
 		WebElement element = getWebElement(driver, xpathLocator);
+		element.clear();
+		element.sendKeys(textValue);
+	}
+
+	protected void sendKeysToElement(WebDriver driver, String xpathLocator, String textValue, String... dynamicValues) {
+		WebElement element = getWebElement(driver, getDynamicXPath(xpathLocator, dynamicValues));
 		element.clear();
 		element.sendKeys(textValue);
 	}
@@ -138,6 +154,10 @@ public class BasePage {
 		return getWebElement(driver, xpathLocator).getText();
 	}
 
+	protected String getElementText(WebDriver driver, String xpathLocator, String... dynamicValues) {
+		return getWebElement(driver, getDynamicXPath(xpathLocator, dynamicValues)).getText();
+	}
+
 	protected int getElementsSize(WebDriver driver, String xpathLocator) {
 		return getListWebElement(driver, xpathLocator).size();
 	}
@@ -148,6 +168,10 @@ public class BasePage {
 
 	protected boolean isElementDisplayed(WebDriver driver, String xpathLocator) {
 		return getWebElement(driver, xpathLocator).isDisplayed();
+	}
+
+	protected boolean isElementDisplayed(WebDriver driver, String xpathLocator, String... dynamicValues) {
+		return getWebElement(driver, getDynamicXPath(xpathLocator, dynamicValues)).isDisplayed();
 	}
 
 	protected boolean isElementEnabled(WebDriver driver, String xpathLocator) {
@@ -205,9 +229,19 @@ public class BasePage {
 		explicitWait.until(ExpectedConditions.elementToBeClickable(getByXPath(xpathLocator)));
 	}
 
+	protected void waitForElementClickable(WebDriver driver, String xpathLocator, String... dynamicValues) {
+		WebDriverWait explicitWait = new WebDriverWait(driver, longTimeOut);
+		explicitWait.until(ExpectedConditions.elementToBeClickable(getByXPath(getDynamicXPath(xpathLocator, dynamicValues))));
+	}
+
 	protected void waitForElementVisible(WebDriver driver, String xpathLocator) {
 		WebDriverWait explicitWait = new WebDriverWait(driver, longTimeOut);
 		explicitWait.until(ExpectedConditions.visibilityOfElementLocated(getByXPath(xpathLocator)));
+	}
+
+	protected void waitForElementVisible(WebDriver driver, String xpathLocator, String... dynamicValues) {
+		WebDriverWait explicitWait = new WebDriverWait(driver, longTimeOut);
+		explicitWait.until(ExpectedConditions.visibilityOfElementLocated(getByXPath(getDynamicXPath(xpathLocator, dynamicValues))));
 	}
 
 	protected void waitForAllElementsVisible(WebDriver driver, String xpathLocator) {
@@ -215,14 +249,29 @@ public class BasePage {
 		explicitWait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(getByXPath(xpathLocator)));
 	}
 
+	protected void waitForAllElementsVisible(WebDriver driver, String xpathLocator, String... dynamicValues) {
+		WebDriverWait explicitWait = new WebDriverWait(driver, longTimeOut);
+		explicitWait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(getByXPath(getDynamicXPath(xpathLocator, dynamicValues))));
+	}
+
 	protected void waitForElementInvisible(WebDriver driver, String xpathLocator) {
 		WebDriverWait explicitWait = new WebDriverWait(driver, longTimeOut);
 		explicitWait.until(ExpectedConditions.invisibilityOfElementLocated(getByXPath(xpathLocator)));
 	}
 
+	protected void waitForElementInvisible(WebDriver driver, String xpathLocator, String... dynamicValues) {
+		WebDriverWait explicitWait = new WebDriverWait(driver, longTimeOut);
+		explicitWait.until(ExpectedConditions.invisibilityOfElementLocated(getByXPath(getDynamicXPath(xpathLocator, dynamicValues))));
+	}
+
 	protected void waitForAllElementsInvisible(WebDriver driver, String xpathLocator) {
 		WebDriverWait explicitWait = new WebDriverWait(driver, longTimeOut);
 		explicitWait.until(ExpectedConditions.invisibilityOfAllElements(getListWebElement(driver, xpathLocator)));
+	}
+
+	protected void waitForAllElementsInvisible(WebDriver driver, String xpathLocator, String... dynamicValues) {
+		WebDriverWait explicitWait = new WebDriverWait(driver, longTimeOut);
+		explicitWait.until(ExpectedConditions.invisibilityOfAllElements(getListWebElement(driver, getDynamicXPath(xpathLocator, dynamicValues))));
 	}
 
 	protected void sleepInSecond(long time) {
@@ -234,5 +283,26 @@ public class BasePage {
 	}
 
 	private long longTimeOut = 30;
+
+	// nopCommerce methods
+	public void clickToHeaderLinkByText(WebDriver driver, String linkText) {
+		waitForElementClickable(driver, BasePageUI.HEADER_LINK_BY_TEXT, linkText);
+		clickToElement(driver, BasePageUI.HEADER_LINK_BY_TEXT, linkText);
+	}
+
+	public void sendKeysToTextboxByID(WebDriver driver, String textboxID, String textValue) {
+		waitForElementVisible(driver, BasePageUI.TEXTBOX_BY_ID, textboxID);
+		sendKeysToElement(driver, BasePageUI.TEXTBOX_BY_ID, textValue, textboxID);
+	}
+
+	public void clickToButtonByText(WebDriver driver, String buttonText) {
+		waitForElementClickable(driver, BasePageUI.BUTTON_BY_TEXT, buttonText);
+		clickToElement(driver, BasePageUI.BUTTON_BY_TEXT, buttonText);
+	}
+
+	public boolean isHeaderLinkByTextDisplayed(WebDriver driver, String linkText) {
+		waitForElementVisible(driver, BasePageUI.HEADER_LINK_BY_TEXT, linkText);
+		return isElementDisplayed(driver, BasePageUI.HEADER_LINK_BY_TEXT, linkText);
+	}
 
 }
